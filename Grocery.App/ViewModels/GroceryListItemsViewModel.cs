@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Grocery.App.Views;
+using Grocery.Core.Data.Repositories;
 using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
+using Grocery.Core.Services;
 using System.Collections.ObjectModel;
 
 namespace Grocery.App.ViewModels
@@ -34,10 +36,22 @@ namespace Grocery.App.ViewModels
 
         private void GetAvailableProducts()
         {
-            //Maak de lijst AvailableProducts leeg
-            //Haal de lijst met producten op
-            //Controleer of het product al op de boodschappenlijst staat, zo niet zet het in de AvailableProducts lijst
-            //Houdt rekening met de voorraad (als die nul is kun je het niet meer aanbieden).            
+            {
+                AvailableProducts.Clear(); // Maak de lijst AvailableProducts leeg
+                var productRepository = new ProductRepository(); // Instantie van de repository
+                var allProducts = productRepository.GetAll(); // Haal alle producten op
+
+                foreach (var product in allProducts)
+                {
+                    bool alreadyOnList = MyGroceryListItems.Any(item => item.ProductId == product.Id);
+                    bool inStock = product.Stock > 0;
+
+                    if (!alreadyOnList && inStock)
+                    {
+                        AvailableProducts.Add(product);
+                    }
+                }
+            }
         }
 
         partial void OnGroceryListChanged(GroceryList value)
